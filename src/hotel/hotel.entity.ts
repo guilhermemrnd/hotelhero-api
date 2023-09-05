@@ -1,15 +1,17 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
+import { BookingEntity } from './../booking/booking.entity';
 
 @Entity({ name: 'hotels' })
 export class HotelEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  hotelId: string;
 
   @Column({ name: 'name', length: 100, nullable: false })
   name: string;
 
-  @Column({ name: 'address', length: 255, nullable: false })
-  address: string;
+  @Column({ name: 'location', length: 255, nullable: false })
+  location: string;
 
   @Column({ name: 'city', length: 100, nullable: false })
   city: string;
@@ -34,4 +36,7 @@ export class HotelEntity {
 
   @Column({ name: 'maxGuests', nullable: false })
   maxGuests: number;
+
+  @OneToMany(() => BookingEntity, (booking) => booking.hotel)
+  bookings: BookingEntity[];
 }

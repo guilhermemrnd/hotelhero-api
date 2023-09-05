@@ -1,21 +1,23 @@
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+import { BookingEntity } from './../booking/booking.entity';
+
 @Entity({ name: 'users' })
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  userId: string;
 
   @Column({ name: 'name', length: 100, nullable: false })
   name: string;
 
-  @Column({ name: 'email', length: 75, nullable: false })
+  @Column({ name: 'email', length: 75, nullable: false, unique: true })
   email: string;
 
   @Column({ name: 'password', length: 255, nullable: false })
@@ -27,6 +29,6 @@ export class UserEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: string;
 
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: string;
+  @OneToMany(() => BookingEntity, (booking) => booking.user)
+  bookings: BookingEntity[];
 }

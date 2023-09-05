@@ -1,15 +1,25 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+import { UserEntity } from './../user/user.entity';
+import { HotelEntity } from './../hotel/hotel.entity';
 
 @Entity({ name: 'bookings' })
 export class BookingEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  bookingId: string;
 
-  @Column({ name: 'user_id' })
-  userId: number;
+  @ManyToOne(() => UserEntity, (user) => user.bookings)
+  user: UserEntity;
 
-  @Column({ name: 'hotel_id' })
-  hotelId: number;
+  @ManyToOne(() => HotelEntity, (hotel) => hotel.bookings)
+  hotel: HotelEntity;
 
   @Column({ name: 'check_in', nullable: false })
   checkIn: string;
@@ -25,4 +35,10 @@ export class BookingEntity {
 
   @Column({ name: 'booking_status', nullable: false })
   bookingStatus: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: string;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: string;
 }
