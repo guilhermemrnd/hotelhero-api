@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 
-import { BookingRepository } from './booking.repository';
+import { BookingService } from './booking.service';
 
 @Controller('bookings')
 export class BookingController {
-  constructor(private bookingRepository: BookingRepository) {}
+  constructor(private bookingService: BookingService) {}
 }

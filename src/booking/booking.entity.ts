@@ -13,7 +13,7 @@ import { HotelEntity } from './../hotel/hotel.entity';
 @Entity({ name: 'bookings' })
 export class BookingEntity {
   @PrimaryGeneratedColumn('uuid')
-  bookingId: string;
+  id: string;
 
   @ManyToOne(() => UserEntity, (user) => user.bookings)
   user: UserEntity;

@@ -5,7 +5,7 @@ import { BookingEntity } from './../booking/booking.entity';
 @Entity({ name: 'hotels' })
 export class HotelEntity {
   @PrimaryGeneratedColumn('uuid')
-  hotelId: string;
+  id: string;
 
   @Column({ name: 'name', length: 100, nullable: false })
   name: string;
