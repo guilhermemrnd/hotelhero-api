@@ -1,11 +1,11 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateBookingDto {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   userId: string;
 
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   hotelId: string;
 

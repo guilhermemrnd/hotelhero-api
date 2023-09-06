@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -34,20 +34,30 @@ export class UserService {
   }
 
   public async findUserById(id: string): Promise<UserResponseDto> {
-    return await this.userRepository.findOneBy({ id }).then((res) => {
-      return { id: res.id, name: res.name, email: res.email };
-    });
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return new UserResponseDto(user.id, user.name, user.email);
   }
 
   public async findUserBookings(userId: string): Promise<BookingEntity[]> {
+    const user = await this.findUserById(userId);
+    
     return await this.bookingRepository.find({ where: { user: { id: userId } } });
   }
 
-  public async updateUser(id: string, user: UpdateUserDto): Promise<void> {
-    await this.userRepository.update(id, user);
+  public async updateUser(id: string, newData: UpdateUserDto): Promise<UserEntity> {
+    const user = await this.findUserById(id);
+
+    Object.assign(user, newData);
+
+    return await this.userRepository.save(user);
   }
 
   public async deleteUser(id: string): Promise<void> {
-    await this.userRepository.delete(id);
+    const result = await this.userRepository.delete(id);
+
+    if (!result.affected) throw new NotFoundException('User not found');
   }
 }

@@ -3,6 +3,8 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/
 import { CreateUserDto } from './dto/CreateUserDto';
 import { FindAllUsersDto } from './dto/FindAllUsersDto';
 import { UpdateUserDto } from './dto/UpdateUserDto';
+import { UserResponseDto } from './dto/UserResponseDto';
+import { BookingEntity } from 'src/booking/booking.entity';
 import { UserService } from './user.service';
 
 @Controller('users')
@@ -16,24 +18,24 @@ export class UserController {
   }
 
   @Get()
-  async findAllUsers(@Query() query: FindAllUsersDto) {
+  async findAllUsers(@Query() query: FindAllUsersDto): Promise<UserResponseDto[]> {
     return await this.userService.findAllUsers();
   }
 
   @Get(':id')
-  async findUserById(@Param('id') id: string) {
+  async findUserById(@Param('id') id: string): Promise<UserResponseDto> {
     return await this.userService.findUserById(id);
   }
 
   @Get(':id/bookings')
-  async findUserBookings(@Param('id') userId: string) {
+  async findUserBookings(@Param('id') userId: string): Promise<BookingEntity[]> {
     return await this.userService.findUserBookings(userId);
   }
 
   @Put(':id')
-  async updatedUser(@Param('id') id: string, @Body() user: UpdateUserDto) {
-    await this.userService.updateUser(id, user);
-    return { message: 'User updated successfully' };
+  async updatedUser(@Param('id') id: string, @Body() newData: UpdateUserDto) {
+    const user = await this.userService.updateUser(id, newData);
+    return { user, message: 'User updated successfully' };
   }
 
   @Delete(':id')

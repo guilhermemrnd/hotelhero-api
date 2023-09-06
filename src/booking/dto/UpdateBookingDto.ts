@@ -1,31 +1,26 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
-export class UpdateBookingDto {
+import { CreateBookingDto } from './CreateBookingDto';
+
+export class UpdateBookingDto extends CreateBookingDto {
   @IsOptional()
-  @IsString()
   userId: string;
 
   @IsOptional()
-  @IsString()
   hotelId: string;
 
   @IsOptional()
-  @IsString()
   checkIn: string;
 
   @IsOptional()
-  @IsString()
   checkOut: string;
 
   @IsOptional()
-  @IsInt()
   numberOfGuests: number;
 
   @IsOptional()
-  @IsInt()
   totalCost: number;
 
   @IsOptional()
-  @IsString()
   bookingStatus: string;
 }
