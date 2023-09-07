@@ -12,8 +12,8 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Post()
-  async createUser(@Body() userData: CreateUserDto) {
-    const createdUser = await this.userService.createUser(userData);
+  async createUser(@Body() user: CreateUserDto) {
+    const createdUser = await this.userService.createUser(user);
     return { createdUser, message: 'User created successfully' };
   }
 
@@ -33,9 +33,9 @@ export class UserController {
   }
 
   @Put(':id')
-  async updatedUser(@Param('id') id: string, @Body() newData: UpdateUserDto) {
-    const user = await this.userService.updateUser(id, newData);
-    return { user, message: 'User updated successfully' };
+  async updatedUser(@Param('id') id: string, @Body() user: UpdateUserDto) {
+    const updatedUser = await this.userService.updateUser(id, user);
+    return { updatedUser, message: 'User updated successfully' };
   }
 
   @Delete(':id')

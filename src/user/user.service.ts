@@ -20,9 +20,7 @@ export class UserService {
   public async createUser(userData: CreateUserDto): Promise<UserEntity> {
     const userEntity = new UserEntity();
 
-    userEntity.name = userData.name;
-    userEntity.email = userData.email;
-    userEntity.password = userData.password;
+    Object.assign(userEntity, userData as UserEntity);
 
     return await this.userRepository.save(userEntity);
   }
@@ -50,7 +48,7 @@ export class UserService {
   public async updateUser(id: string, newData: UpdateUserDto): Promise<UserEntity> {
     const user = await this.findUserById(id);
 
-    Object.assign(user, newData);
+    Object.assign(user, newData as UserEntity);
 
     return await this.userRepository.save(user);
   }

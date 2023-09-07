@@ -20,21 +20,9 @@ export class BookingService {
   ) {}
 
   public async createBooking(booking: CreateBookingDto): Promise<BookingEntity> {
-    const user = await this.userRepository.findOneBy({ id: booking.userId });
-    if (!user) throw new NotFoundException('User not found');
+    const { user, hotel } = await this.findUserAndHotel(booking.userId, booking.hotelId);
 
-    const hotel = await this.hotelRepository.findOneBy({ id: booking.hotelId });
-    if (!hotel) throw new NotFoundException('Hotel not found');
-
-    const bookingEntity = new BookingEntity();
-
-    bookingEntity.user = user;
-    bookingEntity.hotel = hotel;
-    bookingEntity.checkIn = booking.checkIn;
-    bookingEntity.checkOut = booking.checkOut;
-    bookingEntity.numberOfGuests = booking.numberOfGuests;
-    bookingEntity.totalCost = booking.totalCost;
-    bookingEntity.bookingStatus = booking.bookingStatus;
+    const bookingEntity = this.createBookingEntity(user, hotel, booking);
 
     return await this.bookingRepository.save(bookingEntity);
   }
@@ -50,8 +38,30 @@ export class BookingService {
   public async updateBooking(id: string, newData: UpdateBookingDto): Promise<BookingEntity> {
     const booking = await this.findBookingById(id);
 
-    Object.assign(booking, newData);
+    Object.assign(booking, newData as BookingEntity);
 
     return await this.bookingRepository.save(booking);
+  }
+
+  private async findUserAndHotel(userId: string, hotelId: string) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    const hotel = await this.hotelRepository.findOneBy({ id: hotelId });
+    if (!hotel) throw new NotFoundException('Hotel not found');
+
+    return { user, hotel };
+  }
+
+  private createBookingEntity(user: UserEntity, hotel: HotelEntity, booking: CreateBookingDto) {
+    return this.bookingRepository.create({
+      user: user,
+      hotel: hotel,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      numberOfGuests: booking.numberOfGuests,
+      totalCost: booking.totalCost,
+      bookingStatus: booking.bookingStatus,
+    });
   }
 }

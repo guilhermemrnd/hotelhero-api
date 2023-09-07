@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BookingEntity } from './../booking/booking.entity';
+import { AmenityEntity } from './amenity.entity';
 
 @Entity({ name: 'hotels' })
 export class HotelEntity {
@@ -10,8 +11,8 @@ export class HotelEntity {
   @Column({ name: 'name', length: 100, nullable: false })
   name: string;
 
-  @Column({ name: 'location', length: 255, nullable: false })
-  location: string;
+  @Column({ name: 'address', length: 255, nullable: false })
+  address: string;
 
   @Column({ name: 'city', length: 100, nullable: false })
   city: string;
@@ -22,11 +23,12 @@ export class HotelEntity {
   @Column({ name: 'numberOfReviews' })
   numberOfReviews: number;
 
-  @Column({ name: 'price', nullable: false })
-  dailyPrice: string;
+  @Column({ name: 'dailyPrice', nullable: false })
+  dailyPrice: number;
 
-  @Column('simple-array', { name: 'amenities', nullable: false })
-  amenities: string[];
+  @ManyToMany(() => AmenityEntity)
+  @JoinTable()
+  amenities: AmenityEntity[];
 
   @Column({ name: 'description', length: 255, nullable: false })
   description: string;
