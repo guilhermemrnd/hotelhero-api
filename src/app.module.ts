@@ -4,10 +4,10 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { PostgresConfigService } from './config/postgres.config.service';
-import { UserModule } from './user/user.module';
-import { HotelModule } from './hotel/hotel.module';
-import { BookingModule } from './booking/booking.module';
-import { GlobalFilterException } from './intercept/global-filter-exception';
+import { UserModule } from './features/user/user.module';
+import { HotelModule } from './features/hotel/hotel.module';
+import { BookingModule } from './features/booking/booking.module';
+import { GlobalFilterException } from './common/global-filter-exception';
 
 @Module({
   imports: [

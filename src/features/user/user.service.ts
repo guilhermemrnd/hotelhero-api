@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { UserEntity } from './user.entity';
+import { BookingEntity } from './../booking/booking.entity';
 import { UserResponseDto } from './dto/UserResponseDto';
 import { UpdateUserDto } from './dto/UpdateUserDto';
 import { CreateUserDto } from './dto/CreateUserDto';
-import { BookingEntity } from 'src/booking/booking.entity';
 
 @Injectable()
 export class UserService {
@@ -41,7 +41,7 @@ export class UserService {
 
   public async findUserBookings(userId: string): Promise<BookingEntity[]> {
     const user = await this.findUserById(userId);
-    
+
     return await this.bookingRepository.find({ where: { user: { id: userId } } });
   }
 
