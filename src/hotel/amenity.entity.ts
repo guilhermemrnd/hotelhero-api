@@ -6,7 +6,7 @@ export class AmenityEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ name: 'name', length: 50, unique: true })
   name: string;
 
   @ManyToMany(() => HotelEntity, (hotel) => hotel.amenities)

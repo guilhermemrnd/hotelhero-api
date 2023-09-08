@@ -9,7 +9,7 @@ export class UpdateHotelDto extends CreateHotelDto {
   address: string;
 
   @IsOptional()
-  city: string;
+  region: string;
 
   @IsOptional()
   dailyPrice: number;

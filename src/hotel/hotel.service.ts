@@ -3,17 +3,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { HotelEntity } from './hotel.entity';
+import { RegionEntity } from './region.entity';
+import { AmenityEntity } from './amenity.entity';
+import { BookingEntity } from './../booking/booking.entity';
 import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
-import { BookingEntity } from './../booking/booking.entity';
-import { AmenityEntity } from './amenity.entity';
 
 @Injectable()
 export class HotelService {
   constructor(
     @InjectRepository(HotelEntity)
     private readonly hotelRepository: Repository<HotelEntity>,
+    @InjectRepository(RegionEntity)
+    private readonly regionRepository: Repository<RegionEntity>,
     @InjectRepository(AmenityEntity)
     private readonly amenityRepository: Repository<AmenityEntity>,
     @InjectRepository(BookingEntity)
@@ -89,11 +92,12 @@ export class HotelService {
 
   private async createHotelEntity(hotel: CreateHotelDto): Promise<HotelEntity> {
     const foundAmenities = await this.findAmenitiesByName(hotel.amenities);
+    const regionEntity = await this.findRegionById(Number(hotel.region));
 
     return this.hotelRepository.create({
       name: hotel.name,
       address: hotel.address,
-      city: hotel.city,
+      region: regionEntity,
       dailyPrice: hotel.dailyPrice,
       amenities: foundAmenities,
       maxGuests: hotel.maxGuests,
@@ -122,5 +126,13 @@ export class HotelService {
         }
       }
     }
+  }
+
+  private async findRegionById(id: number): Promise<RegionEntity> {
+    const region = await this.regionRepository.findOneBy({ id });
+
+    if (!region) throw new NotFoundException('Region not found');
+
+    return region;
   }
 }

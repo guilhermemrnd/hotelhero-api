@@ -1,7 +1,8 @@
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { BookingEntity } from './../booking/booking.entity';
+import { RegionEntity } from './region.entity';
 import { AmenityEntity } from './amenity.entity';
+import { BookingEntity } from './../booking/booking.entity';
 
 @Entity({ name: 'hotels' })
 export class HotelEntity {
@@ -14,9 +15,6 @@ export class HotelEntity {
   @Column({ name: 'address', length: 255, nullable: false })
   address: string;
 
-  @Column({ name: 'city', length: 100, nullable: false })
-  city: string;
-
   @Column({ name: 'rating' })
   rating: number;
 
@@ -26,10 +24,6 @@ export class HotelEntity {
   @Column({ name: 'dailyPrice', nullable: false })
   dailyPrice: number;
 
-  @ManyToMany(() => AmenityEntity)
-  @JoinTable()
-  amenities: AmenityEntity[];
-
   @Column({ name: 'description', length: 255, nullable: false })
   description: string;
 
@@ -38,6 +32,13 @@ export class HotelEntity {
 
   @Column({ name: 'maxGuests', nullable: false })
   maxGuests: number;
+
+  @ManyToOne(() => RegionEntity, (region) => region.hotels)
+  region: RegionEntity;
+
+  @ManyToMany(() => AmenityEntity)
+  @JoinTable()
+  amenities: AmenityEntity[];
 
   @OneToMany(() => BookingEntity, (booking) => booking.hotel)
   bookings: BookingEntity[];
