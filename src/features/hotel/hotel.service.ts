@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { HotelEntity } from './hotel.entity';
-import { RegionEntity } from './region.entity';
+import { RegionEntity } from '../region/region.entity';
 import { AmenityEntity } from './amenity.entity';
 import { BookingEntity } from './../booking/booking.entity';
 import { CreateHotelDto } from './dto/CreateHotelDto';

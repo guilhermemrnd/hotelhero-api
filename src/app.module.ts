@@ -4,10 +4,12 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { PostgresConfigService } from './config/postgres.config.service';
+import { GlobalFilterException } from './common/global-filter-exception';
 import { UserModule } from './features/user/user.module';
 import { HotelModule } from './features/hotel/hotel.module';
 import { BookingModule } from './features/booking/booking.module';
-import { GlobalFilterException } from './common/global-filter-exception';
+import { RegionModule } from './features/region/region.module';
+import { RapidAPIModule } from './common/rapid-api/rapid-api.module';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { GlobalFilterException } from './common/global-filter-exception';
     UserModule,
     HotelModule,
     BookingModule,
+    RegionModule,
   ],
   controllers: [],
   providers: [

@@ -1,11 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 
+import { UserService } from './user.service';
+import { BookingEntity } from './../booking/booking.entity';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { FindAllUsersDto } from './dto/FindAllUsersDto';
 import { UpdateUserDto } from './dto/UpdateUserDto';
 import { UserResponseDto } from './dto/UserResponseDto';
-import { BookingEntity } from 'src/booking/booking.entity';
-import { UserService } from './user.service';
 
 @Controller('users')
 export class UserController {

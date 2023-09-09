@@ -1,7 +1,7 @@
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { RegionEntity } from './region.entity';
 import { AmenityEntity } from './amenity.entity';
+import { RegionEntity } from './../region/region.entity';
 import { BookingEntity } from './../booking/booking.entity';
 
 @Entity({ name: 'hotels' })

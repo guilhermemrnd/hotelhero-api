@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, PrimaryColumn } from 'typeorm';
 
-import { HotelEntity } from './hotel.entity';
+import { HotelEntity } from '../hotel/hotel.entity';
 
 @Entity('regions')
 export class RegionEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: number;
 
   @Column({ name: 'name', length: 100, nullable: false })
