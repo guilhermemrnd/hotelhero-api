@@ -51,7 +51,7 @@ export class HotelService {
 
     if (!hotel) throw new NotFoundException('Hotel not found');
 
-    if (this.needsUpdate(hotel)) {
+    if (this.needsUpdate(hotel) && query) {
       const updatedHotel = await this.updateHotelInfo(hotel, query);
       return await this.hotelRepository.save(updatedHotel);
     }

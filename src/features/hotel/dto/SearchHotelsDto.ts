@@ -1,5 +1,6 @@
 import { IsIn, IsNumberString, IsOptional, IsString } from 'class-validator';
 
+import { IsDateStringFormat } from '../validation/is-date-string-format.validator';
 import { IsAmenity } from '../validation/is-amenity.validator';
 
 export class SearchHotelsDto {
@@ -7,9 +8,11 @@ export class SearchHotelsDto {
   search: string;
 
   @IsString()
+  @IsDateStringFormat()
   checkIn: string;
 
   @IsString()
+  @IsDateStringFormat()
   checkOut: string;
 
   @IsNumberString()
