@@ -23,17 +23,17 @@ export class HotelController {
 
   @Get(':id')
   async findHotelById(@Param('id') id: string): Promise<HotelEntity> {
-    return await this.hotelService.findHotelById(id);
+    return await this.hotelService.findHotelById(+id);
   }
 
   @Get(':id/bookings')
   async findHotelBookings(@Param('id') hotelId: string) {
-    return await this.hotelService.findHotelBookings(hotelId);
+    return await this.hotelService.findHotelBookings(+hotelId);
   }
 
   @Put(':id')
   async updateHotel(@Param('id') id: string, @Body() hotel: UpdateHotelDto) {
-    const updatedHotel = await this.hotelService.updateHotel(id, hotel);
+    const updatedHotel = await this.hotelService.updateHotel(+id, hotel);
     return { updatedHotel, message: 'Hotel updated successfully' };
   }
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 
 import { AmenityEntity } from './amenity.entity';
 import { RegionEntity } from './../region/region.entity';
@@ -6,8 +6,8 @@ import { BookingEntity } from './../booking/booking.entity';
 
 @Entity({ name: 'hotels' })
 export class HotelEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryColumn()
+  id: number;
 
   @Column({ name: 'name', length: 100, nullable: false })
   name: string;
@@ -15,23 +15,29 @@ export class HotelEntity {
   @Column({ name: 'address', length: 255, nullable: false })
   address: string;
 
-  @Column({ name: 'rating' })
+  @Column({ type: 'float', name: 'rating' })
   rating: number;
 
-  @Column({ name: 'numberOfReviews' })
+  @Column({ name: 'number_of_reviews' })
   numberOfReviews: number;
 
-  @Column({ name: 'dailyPrice', nullable: false })
+  @Column({ name: 'daily_price', type: 'float', nullable: false })
   dailyPrice: number;
 
-  @Column({ name: 'description', length: 255, nullable: false })
+  @Column({ name: 'currency_code', nullable: false })
+  currencyCode: string;
+
+  @Column({ name: 'description', length: 255 })
   description: string;
 
   @Column('simple-array', { name: 'photos', nullable: false })
   photos: string[];
 
-  @Column({ name: 'maxGuests', nullable: false })
+  @Column({ name: 'max_guests' })
   maxGuests: number;
+
+  @Column({ name: 'bathrooms' })
+  bathrooms: number;
 
   @ManyToOne(() => RegionEntity, (region) => region.hotels)
   region: RegionEntity;

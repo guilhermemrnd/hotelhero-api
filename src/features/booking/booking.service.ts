@@ -20,7 +20,7 @@ export class BookingService {
   ) {}
 
   public async createBooking(booking: CreateBookingDto): Promise<BookingEntity> {
-    const { user, hotel } = await this.findUserAndHotel(booking.userId, booking.hotelId);
+    const { user, hotel } = await this.findUserAndHotel(booking.userId, +booking.hotelId);
 
     const bookingEntity = this.createBookingEntity(user, hotel, booking);
 
@@ -43,7 +43,7 @@ export class BookingService {
     return await this.bookingRepository.save(booking);
   }
 
-  private async findUserAndHotel(userId: string, hotelId: string) {
+  private async findUserAndHotel(userId: string, hotelId: number) {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('User not found');
 

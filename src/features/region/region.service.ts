@@ -5,7 +5,7 @@ import { firstValueFrom, map, Observable } from 'rxjs';
 
 import { RegionEntity } from './region.entity';
 import { RapidAPIService } from '../../common/rapid-api/rapid-api.service';
-import { RegionsResponse } from '../../common/rapid-api/regions-response';
+import { LocationsResponse } from '../../common/rapid-api/interfaces/locations-response';
 
 @Injectable()
 export class RegionService {
@@ -25,8 +25,8 @@ export class RegionService {
 
       const regionEntities = apiData?.map((region) => {
         return this.regionRepository.create({
-          id: Number(region.gaiaId),
-          name: region.regionNames.fullName,
+          id: Number(region.dest_id),
+          name: region.label,
         });
       });
 
@@ -38,6 +38,6 @@ export class RegionService {
 
   private async fetchFromRapidAPI(location: string) {
     const regions = await firstValueFrom(this.rapidAPIService.fetchRegions(location));
-    return regions.data?.filter((region) => region.type === 'CITY') ?? [];
+    return regions?.filter((region) => region.dest_type === 'city') ?? [];
   }
 }

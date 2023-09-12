@@ -1,9 +1,9 @@
-import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNumberString, IsOptional, IsString } from 'class-validator';
 
 import { IsAmenity } from '../validation/is-amenity.validator';
 
 export class SearchHotelsDto {
-  @IsString()
+  @IsNumberString()
   search: string;
 
   @IsString()
@@ -12,26 +12,25 @@ export class SearchHotelsDto {
   @IsString()
   checkOut: string;
 
-  @IsInt()
-  guests: number;
+  @IsNumberString()
+  guests: string;
 
-  @IsInt()
-  limit: number;
+  @IsNumberString()
+  limit: string;
 
-  @IsInt()
-  page: number;
-
-  @IsOptional()
-  @IsInt()
-  minPrice?: number;
+  @IsNumberString()
+  page: string;
 
   @IsOptional()
-  @IsInt()
-  maxPrice?: number;
+  @IsNumberString()
+  minPrice?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  maxPrice?: string;
 
   @IsOptional()
   @IsString({ each: true })
-  @IsAmenity({ message: 'Invalid amenity' })
   amenities?: string[];
 
   @IsOptional()
