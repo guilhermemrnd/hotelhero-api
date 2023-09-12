@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { firstValueFrom } from 'rxjs';
@@ -14,7 +9,9 @@ import { AmenityEntity } from './amenity.entity';
 import { BookingEntity } from './../booking/booking.entity';
 import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
+import { FindHotelByIdDto } from './dto/FindHotelByIdDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
+import { HotelPhotosResponse } from './../../common/rapid-api/interfaces/hotel-photos-response';
 import { RapidAPIService } from './../../common/rapid-api/rapid-api.service';
 
 @Injectable()
@@ -42,39 +39,22 @@ export class HotelService {
     const hotels = await queryBuilder?.getMany();
 
     if (hotels?.length === 0) {
-      const apiData = await this.fetchFromRapidAPI(query);
-
-      if (!apiData) return [];
-
-      const region = await this.findRegionById(Number(query.search));
-
-      const hotelEntities = apiData?.map((hotel) => {
-        const photoUrl = hotel.main_photo_url.replace('square60', '1024x720');
-        const normalizedRating = hotel.review_score / 2;
-
-        return this.hotelRepository.create({
-          id: hotel.hotel_id,
-          name: hotel.hotel_name,
-          address: hotel.address,
-          rating: normalizedRating,
-          numberOfReviews: hotel.review_nr,
-          dailyPrice: hotel.min_total_price,
-          currencyCode: hotel.currency_code,
-          photos: [photoUrl],
-          region,
-        });
-      });
-
+      const hotelEntities = await this.createHotelsFromAPI(query);
       return await this.hotelRepository.save(hotelEntities);
     }
 
     return hotels ?? [];
   }
 
-  public async findHotelById(id: number): Promise<HotelEntity> {
-    const hotel = await this.hotelRepository.findOneBy({ id });
+  public async findHotelById(query: FindHotelByIdDto): Promise<HotelEntity> {
+    const hotel = await this.hotelRepository.findOneBy({ id: +query.hotelId });
 
     if (!hotel) throw new NotFoundException('Hotel not found');
+
+    if (this.needsUpdate(hotel)) {
+      const updatedHotel = await this.updateHotelInfo(hotel, query);
+      return await this.hotelRepository.save(updatedHotel);
+    }
 
     return hotel;
   }
@@ -83,8 +63,8 @@ export class HotelService {
     return await this.bookingRepository.find({ where: { hotel: { id: hotelId } } });
   }
 
-  public async updateHotel(id: number, newData: UpdateHotelDto): Promise<HotelEntity> {
-    const hotel = await this.findHotelById(id);
+  public async updateHotel(id: string, newData: UpdateHotelDto): Promise<HotelEntity> {
+    const hotel = await this.findHotelById({ hotelId: id });
 
     if (newData?.amenities) {
       const foundAmenities = await this.findAmenitiesByName(newData.amenities);
@@ -174,9 +154,82 @@ export class HotelService {
     }
   }
 
-  private async fetchFromRapidAPI(query: SearchHotelsDto) {
-    const hotels = await firstValueFrom(this.rapidAPIService.fetchHotels(query));
-    return hotels.result;
+  private async createHotelsFromAPI(query: SearchHotelsDto): Promise<HotelEntity[]> {
+    const apiData = await firstValueFrom(this.rapidAPIService.fetchHotels(query));
+
+    if (!apiData) return [];
+
+    const region = await this.findRegionById(Number(query.search));
+
+    const hotelEntities = apiData?.result?.map((hotel) => {
+      const photoUrl = hotel.main_photo_url.replace('square60', '1024x720');
+      const normalizedRating = hotel.review_score / 2;
+
+      return this.hotelRepository.create({
+        id: hotel.hotel_id,
+        name: hotel.hotel_name,
+        address: hotel.address,
+        rating: normalizedRating,
+        numberOfReviews: hotel.review_nr,
+        dailyPrice: hotel.min_total_price,
+        currencyCode: hotel.currency_code,
+        photos: [photoUrl],
+        region,
+      });
+    });
+
+    return hotelEntities;
+  }
+
+  // find-hotel-by-id helper methods
+  private needsUpdate(hotel: HotelEntity): boolean {
+    return !hotel?.maxGuests || !hotel?.amenities || hotel?.photos.length === 1;
+  }
+
+  private async updateHotelInfo(hotel: HotelEntity, query: FindHotelByIdDto): Promise<HotelEntity> {
+    const apiData = await this.fetchDataFromRapidAPI(query);
+
+    if (!apiData) return hotel;
+
+    const { details, photosUrl, mainDescription } = apiData;
+
+    return this.hotelRepository.create({
+      ...hotel,
+      description: mainDescription[0]?.description,
+      maxGuests: details.block?.[0]?.nr_adults,
+      bathrooms: details.block?.[0]?.number_of_bathrooms,
+      photos: photosUrl,
+      amenities: details.property_highlight_strip?.map((amenity) => {
+        return this.amenityRepository.create({ name: amenity.name });
+      }),
+    });
+  }
+
+  private async fetchDataFromRapidAPI(query: FindHotelByIdDto) {
+    const { details, photos, descriptions } = await this.rapidAPIService.fetchHotelById(query);
+
+    const photosUrl = this.getPhotosUrl(photos, query.hotelId);
+    const mainDescription = descriptions.filter((d) => d.descriptiontype_id === 6);
+
+    return { details: details?.[0], photosUrl, mainDescription };
+  }
+
+  private getPhotosUrl(photos: HotelPhotosResponse, hotelId: string): string[] {
+    const max1024x768Urls: string[] = [];
+    const urlPrefix = photos.url_prefix;
+
+    const hotelPhotos = photos.data[hotelId];
+
+    for (const photoSet of hotelPhotos) {
+      for (let i = 4; i < photoSet.length; i++) {
+        const potencialUrl = photoSet[i];
+        if (typeof potencialUrl === 'string' && potencialUrl.includes('1024x768')) {
+          max1024x768Urls.push(urlPrefix + potencialUrl);
+        }
+      }
+    }
+
+    return max1024x768Urls;
   }
 
   // update-hotel helper methods

@@ -27,7 +27,7 @@ export class GlobalFilterException implements ExceptionFilter {
             },
           };
 
-    console.error('Exception caught:', exception);
+    console.error('Exception caught!', exception);
 
     httpAdapter.reply(res, body, status);
   }

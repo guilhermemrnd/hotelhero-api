@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 
 import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
+import { FindHotelByIdDto } from './dto/FindHotelByIdDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
 import { HotelEntity } from './hotel.entity';
 import { HotelService } from './hotel.service';
@@ -22,8 +23,8 @@ export class HotelController {
   }
 
   @Get(':id')
-  async findHotelById(@Param('id') id: string): Promise<HotelEntity> {
-    return await this.hotelService.findHotelById(+id);
+  async findHotelById(@Query() query: FindHotelByIdDto): Promise<HotelEntity> {
+    return await this.hotelService.findHotelById(query);
   }
 
   @Get(':id/bookings')
@@ -33,7 +34,7 @@ export class HotelController {
 
   @Put(':id')
   async updateHotel(@Param('id') id: string, @Body() hotel: UpdateHotelDto) {
-    const updatedHotel = await this.hotelService.updateHotel(+id, hotel);
+    const updatedHotel = await this.hotelService.updateHotel(id, hotel);
     return { updatedHotel, message: 'Hotel updated successfully' };
   }
 }

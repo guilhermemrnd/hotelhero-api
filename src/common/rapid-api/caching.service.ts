@@ -13,7 +13,7 @@ export abstract class CachingService {
   private cacheFilePath = path.resolve(__dirname, 'cache.json');
 
   constructor(protected httpService: HttpService) {
-    this.loadCacheFromFile()
+    this.loadCacheFromFile();
   }
 
   private async loadCacheFromFile() {
@@ -36,7 +36,17 @@ export abstract class CachingService {
     }
 
     return this.httpService.get<T>(url, options).pipe(
-      map((response) => response.data),
+      map((response) => {
+        const data = response.data;
+
+        if (this.isAPIErrorResponse(data)) {
+          const jsonError = JSON.stringify(data, null, 2);
+          console.error('API Error:', jsonError)
+          throw new Error();
+        }
+
+        return response.data;
+      }),
       tap((data) => {
         this.cache.set(cacheKey, data);
         this.saveCacheToFile().catch((e) => {
@@ -45,9 +55,13 @@ export abstract class CachingService {
       }),
       catchError((error) => {
         this.cache.delete(cacheKey);
-        console.error(`Error occurred while fetching ${url}`, error);
-        throw new HttpException('Failed to fetch data', error.response?.status || 500);
+        console.error(`Error occurred while fetching ${url}.`, error);
+        throw new Error(`Failed to fetch data. Code ${error.response?.status || 500}`);
       }),
     );
+  }
+
+  private isAPIErrorResponse(data: any): { code: string; message: string } {
+    return data && typeof data === 'object' && 'code' in data && 'message' in data;
   }
 }

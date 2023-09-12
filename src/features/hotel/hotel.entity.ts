@@ -27,16 +27,16 @@ export class HotelEntity {
   @Column({ name: 'currency_code', nullable: false })
   currencyCode: string;
 
-  @Column({ name: 'description', length: 255 })
+  @Column({ name: 'description', length: 2048, nullable: true })
   description: string;
 
   @Column('simple-array', { name: 'photos', nullable: false })
   photos: string[];
 
-  @Column({ name: 'max_guests' })
+  @Column({ name: 'max_guests', nullable: true })
   maxGuests: number;
 
-  @Column({ name: 'bathrooms' })
+  @Column({ name: 'bathrooms', nullable: true })
   bathrooms: number;
 
   @ManyToOne(() => RegionEntity, (region) => region.hotels)
