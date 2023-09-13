@@ -5,11 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { PostgresConfigService } from './config/postgres.config.service';
 import { GlobalFilterException } from './common/global-filter-exception';
+import { AuthModule } from './features/auth/auth.module';
 import { UserModule } from './features/user/user.module';
 import { HotelModule } from './features/hotel/hotel.module';
 import { BookingModule } from './features/booking/booking.module';
 import { RegionModule } from './features/region/region.module';
-import { RapidAPIModule } from './common/rapid-api/rapid-api.module';
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { RapidAPIModule } from './common/rapid-api/rapid-api.module';
       useClass: PostgresConfigService,
       inject: [PostgresConfigService],
     }),
+    AuthModule,
     UserModule,
     HotelModule,
     BookingModule,
