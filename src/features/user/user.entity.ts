@@ -4,12 +4,14 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { BookingEntity } from './../booking/booking.entity';
 
 @Entity({ name: 'users' })
+@Unique(['email'])
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
