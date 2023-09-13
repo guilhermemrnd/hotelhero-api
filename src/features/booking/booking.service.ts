@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -21,6 +21,20 @@ export class BookingService {
 
   public async createBooking(booking: CreateBookingDto): Promise<BookingEntity> {
     const { user, hotel } = await this.findUserAndHotel(booking.userId, +booking.hotelId);
+
+    const existingBooking = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .innerJoin('booking.hotel', 'hotel')
+      .where('hotel.id = :hotelId', { hotelId: +booking.hotelId })
+      .andWhere('booking.checkIn < :checkOut OR booking.checkIn = :checkIn', {
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+      })
+      .getOne();
+
+    if (existingBooking) {
+      throw new ConflictException('An overlapping booking already exists for this hotel.');
+    }
 
     const bookingEntity = this.createBookingEntity(user, hotel, booking);
 
