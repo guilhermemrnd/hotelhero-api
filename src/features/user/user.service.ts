@@ -43,9 +43,16 @@ export class UserService {
   }
 
   public async findUserBookings(userId: string): Promise<BookingEntity[]> {
-    const user = await this.findUserById(userId);
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
 
-    return await this.bookingRepository.find({ where: { user: { id: userId } } });
+    const userBookings = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .innerJoin('booking.user', 'user')
+      .where('user.id = :userId', { userId })
+      .getMany();
+
+    return userBookings;
   }
 
   public async updateUser(id: string, newData: UpdateUserDto): Promise<UserEntity> {
