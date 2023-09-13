@@ -60,7 +60,16 @@ export class HotelService {
   }
 
   public async findHotelBookings(hotelId: number): Promise<BookingEntity[]> {
-    return await this.bookingRepository.find({ where: { hotel: { id: hotelId } } });
+    const hotel = await this.hotelRepository.findOneBy({ id: hotelId });
+    if (!hotel) throw new NotFoundException('Hotel not found');
+
+    const hotelBookings = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .innerJoin('booking.hotel', 'hotel')
+      .where('hotel.id = :hotelId', { hotelId })
+      .getMany();
+
+    return hotelBookings;
   }
 
   public async updateHotel(id: string, newData: UpdateHotelDto): Promise<HotelEntity> {
@@ -120,6 +129,7 @@ export class HotelService {
         .createQueryBuilder('hotel')
         .leftJoinAndSelect('hotel.region', 'region')
         .leftJoinAndSelect('hotel.amenities', 'amenity')
+        .leftJoinAndSelect('hotel.bookings', 'booking')
         .where('hotel.region = :regionId', { regionId: +search });
 
       if (minPrice) {

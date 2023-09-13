@@ -18,11 +18,11 @@ import { RegionModule } from './features/region/region.module';
       useClass: PostgresConfigService,
       inject: [PostgresConfigService],
     }),
-    AuthModule,
     UserModule,
     HotelModule,
     BookingModule,
     RegionModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [
