@@ -15,4 +15,9 @@ export class AuthController {
 
     return this.authService.login(user);
   }
+
+  @Post('refresh')
+  async refreshToken(@Body('oldToken') oldToken: string) {
+    return this.authService.refreshToken(oldToken);
+  }
 }
