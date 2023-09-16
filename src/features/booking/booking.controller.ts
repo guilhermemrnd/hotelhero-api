@@ -10,23 +10,23 @@ import { BookingService } from './booking.service';
 export class BookingController {
   constructor(private bookingService: BookingService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
+  @UseGuards(JwtAuthGuard)
   async createBooking(@Body() booking: CreateBookingDto) {
     const createdBooking = await this.bookingService.createBooking(booking);
-    return { createdBooking, message: 'Booking created successfully' };
+    return { data: createdBooking, message: 'Booking created successfully' };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   async findBookingById(@Param('id') id: string): Promise<BookingEntity> {
     return await this.bookingService.findBookingById(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   async updateBooking(@Param('id') id: string, @Body() newData: UpdateBookingDto) {
-    const booking = await this.bookingService.updateBooking(id, newData);
-    return { booking, message: 'Booking updated successfully' };
+    const updatedBooking = await this.bookingService.updateBooking(id, newData);
+    return { data: updatedBooking, message: 'Booking updated successfully' };
   }
 }

@@ -15,7 +15,7 @@ export class UserController {
   @Post()
   async createUser(@Body() user: CreateUserDto) {
     const createdUser = await this.userService.createUser(user);
-    return { createdUser, message: 'User created successfully' };
+    return { data: createdUser, message: 'User created successfully' };
   }
 
   @Get()
@@ -23,27 +23,27 @@ export class UserController {
     return await this.userService.findAllUsers();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   async findUserById(@Param('id') id: string): Promise<UserResponseDto> {
     return await this.userService.findUserById(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id/bookings')
+  @UseGuards(JwtAuthGuard)
   async findUserBookings(@Param('id') userId: string): Promise<BookingEntity[]> {
     return await this.userService.findUserBookings(userId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   async updatedUser(@Param('id') id: string, @Body() user: UpdateUserDto) {
     const updatedUser = await this.userService.updateUser(id, user);
-    return { updatedUser, message: 'User updated successfully' };
+    return { data: updatedUser, message: 'User updated successfully' };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   async deleteUser(@Param('id') id: string) {
     await this.userService.deleteUser(id);
     return { message: 'User deleted successfully' };

@@ -14,7 +14,7 @@ export class HotelController {
   @Post()
   async createHotel(@Body() hotel: CreateHotelDto) {
     const createdHotel = await this.hotelService.createHotel(hotel);
-    return { createdHotel, message: 'Hotel created successfully' };
+    return { data: createdHotel, message: 'Hotel created successfully' };
   }
 
   @Get()
@@ -35,6 +35,6 @@ export class HotelController {
   @Put(':id')
   async updateHotel(@Param('id') id: string, @Body() hotel: UpdateHotelDto) {
     const updatedHotel = await this.hotelService.updateHotel(id, hotel);
-    return { updatedHotel, message: 'Hotel updated successfully' };
+    return { data: updatedHotel, message: 'Hotel updated successfully' };
   }
 }
