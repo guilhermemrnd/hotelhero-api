@@ -18,6 +18,12 @@ export class UserController {
     return { data: createdUser, message: 'User created successfully' };
   }
 
+  @Post('check-email')
+  async checkEmail(@Body('email') email: string): Promise<{ exists: boolean }> {
+    const exists = await this.userService.checkEmail(email);
+    return { exists };
+  }
+
   @Get()
   async findAllUsers(@Query() query: FindAllUsersDto): Promise<UserResponseDto[]> {
     return await this.userService.findAllUsers();

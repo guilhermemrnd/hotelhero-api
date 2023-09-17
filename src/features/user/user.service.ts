@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -19,6 +19,8 @@ export class UserService {
   ) {}
 
   public async createUser(userData: CreateUserDto): Promise<UserEntity> {
+    await this.checkIfUserExists(userData.email);
+
     const userEntity = this.userRepository.create({
       name: userData.name,
       email: userData.email,
@@ -26,6 +28,11 @@ export class UserService {
     });
 
     return await this.userRepository.save(userEntity);
+  }
+
+  public async checkEmail(email: string): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ email })
+    return !!user;
   }
 
   public async findAllUsers(): Promise<UserResponseDto[]> {
@@ -67,5 +74,10 @@ export class UserService {
     const result = await this.userRepository.delete(id);
 
     if (!result.affected) throw new NotFoundException('User not found');
+  }
+
+  private async checkIfUserExists(email: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ email });
+    if (user) throw new ConflictException('User already exists');
   }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Post, Res, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Res, Get, Req, UseGuards, NotFoundException } from '@nestjs/common';
 import { Response } from 'express';
 
 import { LoginDto } from './dto/LoginDto';
@@ -12,7 +12,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const user = await this.authService.validateUser(body.email, body.password);
-    if (!user) throw new BadRequestException('Invalid credentials');
+    if (!user) throw new NotFoundException('Invalid credentials');
 
     const jwt = await this.authService.generateJWT(user);
 
