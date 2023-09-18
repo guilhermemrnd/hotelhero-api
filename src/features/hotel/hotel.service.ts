@@ -40,18 +40,21 @@ export class HotelService {
   }
 
   public async findHotels(query: SearchHotelsDto): Promise<HotelResponseDto> {
-    const queryBuilder = this.buildQuery(query);
+    try {
+      const queryBuilder = this.buildQuery(query);
 
-    if (!queryBuilder) throw new InternalServerErrorException('Error building query');
+      let [hotels, total] = await queryBuilder.getManyAndCount();
 
-    let [hotels, total] = await queryBuilder.getManyAndCount();
+      if (hotels?.length === 0) {
+        const hotelEntities = await this.createHotelsFromAPI(query);
+        hotels = await this.hotelRepository.save(hotelEntities);
+      }
 
-    if (hotels?.length === 0) {
-      const hotelEntities = await this.createHotelsFromAPI(query);
-      hotels = await this.hotelRepository.save(hotelEntities);
+      return { data: hotels, total, page: +query.page, limit: Number(query?.limit) ?? 10 };
+    } catch (e) {
+      console.error('Error finding hotels.', e);
+      throw new InternalServerErrorException('Error finding hotels', e.toString());
     }
-
-    return { data: hotels, total, page: +query.page, limit: Number(query?.limit) ?? 10 };
   }
 
   public async findHotelById(query: FindHotelByIdDto): Promise<HotelEntity> {
@@ -131,7 +134,7 @@ export class HotelService {
   // find-hotels helper methods
   private buildQuery(query: SearchHotelsDto) {
     try {
-      const { destination, minPrice, maxPrice, amenities, ratings } = query;
+      const { userId, destination, minPrice, maxPrice, amenities, ratings } = query;
 
       const limit = Number(query?.limit) ?? '10';
       const page = Number(query.page);
@@ -139,9 +142,16 @@ export class HotelService {
       const queryBuilder = this.hotelRepository
         .createQueryBuilder('hotel')
         .leftJoinAndSelect('hotel.region', 'region')
-        .leftJoinAndSelect('hotel.amenities', 'amenity')
         .leftJoinAndSelect('hotel.bookings', 'booking')
-        .where('hotel.region = :regionId', { regionId: +destination });
+        .where('hotel.region = :regionId', {
+          regionId: +destination,
+        });
+
+      if (userId) {
+        queryBuilder
+          .leftJoinAndSelect('hotel.favoritedByUsers', 'user', 'user.id = :userId', { userId })
+          .addSelect('CASE WHEN user.id IS NOT NULL THEN TRUE ELSE FALSE END', 'isFavorite');
+      }
 
       if (minPrice) {
         queryBuilder.andWhere('hotel.dailyPrice >= :minPrice', { minPrice });
@@ -152,7 +162,9 @@ export class HotelService {
       }
 
       if (amenities && amenities.length > 0) {
-        queryBuilder.andWhere('hotel.amenites IN (:...amenities)', { amenities });
+        queryBuilder
+          .leftJoinAndSelect('hotel.amenities', 'amenity')
+          .andWhere('hotel.amenities IN (:...amenities)', { amenities });
       }
 
       if (ratings && ratings.length > 0) {
@@ -172,6 +184,7 @@ export class HotelService {
       return queryBuilder;
     } catch (e) {
       console.error('Error building query:', e);
+      throw new InternalServerErrorException('Error building query', e.toString());
     }
   }
 

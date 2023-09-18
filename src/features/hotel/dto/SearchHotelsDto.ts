@@ -1,7 +1,11 @@
-import { IsIn, IsNumberString, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNumberString, IsOptional, IsString, IsUUID } from 'class-validator';
 import { IsDateStringFormat } from '../validation/is-date-string-format.validator';
 
 export class SearchHotelsDto {
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
+
   @IsNumberString()
   destination: string;
 

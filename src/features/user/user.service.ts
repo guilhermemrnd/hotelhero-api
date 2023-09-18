@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 
 import { UserEntity } from './user.entity';
+import { HotelEntity } from '../hotel/hotel.entity';
 import { BookingEntity } from './../booking/booking.entity';
 import { UserResponseDto } from './dto/UserResponseDto';
 import { UpdateUserDto } from './dto/UpdateUserDto';
@@ -14,6 +15,8 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(HotelEntity)
+    private readonly hotelRepository: Repository<HotelEntity>,
     @InjectRepository(BookingEntity)
     private readonly bookingRepository: Repository<BookingEntity>,
   ) {}
@@ -31,7 +34,7 @@ export class UserService {
   }
 
   public async checkEmail(email: string): Promise<boolean> {
-    const user = await this.userRepository.findOneBy({ email })
+    const user = await this.userRepository.findOneBy({ email });
     return !!user;
   }
 
@@ -74,6 +77,25 @@ export class UserService {
     const result = await this.userRepository.delete(id);
 
     if (!result.affected) throw new NotFoundException('User not found');
+  }
+
+  public async toggleFavorite(userId: string, hotelId: number, isFavorite: boolean) {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['favoriteHotels'] });
+    const hotel = await this.hotelRepository.findOneBy({ id: hotelId });
+
+    if (!user || !hotel) {
+      throw new NotFoundException('User or hotel not found');
+    }
+
+    if (isFavorite) {
+      if (!user?.favoriteHotels.some((favHotel) => favHotel.id === hotel.id)) {
+        user.favoriteHotels.push(hotel);
+      }
+    } else {
+      user.favoriteHotels = user.favoriteHotels.filter((favHotel) => favHotel.id !== hotel.id);
+    }
+
+    await this.userRepository.save(user);
   }
 
   private async checkIfUserExists(email: string): Promise<void> {

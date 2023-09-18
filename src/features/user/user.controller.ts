@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BookingEntity } from './../booking/booking.entity';
@@ -46,6 +58,21 @@ export class UserController {
   async updatedUser(@Param('id') id: string, @Body() user: UpdateUserDto) {
     const updatedUser = await this.userService.updateUser(id, user);
     return { data: updatedUser, message: 'User updated successfully' };
+  }
+
+  @Patch(':userId/favorite-hotels/:hotelId')
+  @UseGuards(JwtAuthGuard)
+  async toggleFavorite(
+    @Param('userId') userId: string,
+    @Param('hotelId') hotelId: number,
+    @Body('isFavorite') isFavorite: boolean,
+  ): Promise<{ message: string }> {
+    if (isFavorite === undefined) throw new BadRequestException('isFavorite is required');
+    
+    await this.userService.toggleFavorite(userId, +hotelId, isFavorite);
+
+    const action = isFavorite ? 'added to' : 'removed from';
+    return { message: `Hotel has been ${action} favorites.` };
   }
 
   @Delete(':id')
