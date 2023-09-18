@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { firstValueFrom } from 'rxjs';
@@ -11,6 +16,7 @@ import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
 import { FindHotelByIdDto } from './dto/FindHotelByIdDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
+import { HotelResponseDto } from './dto/HotelResponseDto';
 import { HotelPhotosResponse } from './../../common/rapid-api/interfaces/hotel-photos-response';
 import { RapidAPIService } from './../../common/rapid-api/rapid-api.service';
 
@@ -33,17 +39,19 @@ export class HotelService {
     return await this.hotelRepository.save(hotelEntity);
   }
 
-  public async findHotels(query: SearchHotelsDto): Promise<HotelEntity[]> {
+  public async findHotels(query: SearchHotelsDto): Promise<HotelResponseDto> {
     const queryBuilder = this.buildQuery(query);
 
-    const hotels = await queryBuilder?.getMany();
+    if (!queryBuilder) throw new InternalServerErrorException('Error building query');
+
+    let [hotels, total] = await queryBuilder.getManyAndCount();
 
     if (hotels?.length === 0) {
       const hotelEntities = await this.createHotelsFromAPI(query);
-      return await this.hotelRepository.save(hotelEntities);
+      hotels = await this.hotelRepository.save(hotelEntities);
     }
 
-    return hotels ?? [];
+    return { data: hotels, total, page: +query.page, limit: Number(query?.limit) ?? 10 };
   }
 
   public async findHotelById(query: FindHotelByIdDto): Promise<HotelEntity> {
@@ -123,14 +131,17 @@ export class HotelService {
   // find-hotels helper methods
   private buildQuery(query: SearchHotelsDto) {
     try {
-      const { search, limit, page, minPrice, maxPrice, amenities, ratings } = query;
+      const { destination, minPrice, maxPrice, amenities, ratings } = query;
+
+      const limit = Number(query?.limit) ?? '10';
+      const page = Number(query.page);
 
       const queryBuilder = this.hotelRepository
         .createQueryBuilder('hotel')
         .leftJoinAndSelect('hotel.region', 'region')
         .leftJoinAndSelect('hotel.amenities', 'amenity')
         .leftJoinAndSelect('hotel.bookings', 'booking')
-        .where('hotel.region = :regionId', { regionId: +search });
+        .where('hotel.region = :regionId', { regionId: +destination });
 
       if (minPrice) {
         queryBuilder.andWhere('hotel.dailyPrice >= :minPrice', { minPrice });
@@ -156,7 +167,7 @@ export class HotelService {
         queryBuilder.andWhere(`(${ratingQueries.join(' OR ')})`);
       }
 
-      queryBuilder.limit(+limit).offset((+page - 1) * +limit);
+      queryBuilder.limit(limit).offset((page - 1) * limit);
 
       return queryBuilder;
     } catch (e) {
@@ -169,7 +180,7 @@ export class HotelService {
 
     if (!apiData) return [];
 
-    const region = await this.findRegionById(Number(query.search));
+    const region = await this.findRegionById(Number(query.destination));
 
     const hotelEntities = apiData?.result?.map((hotel) => {
       const photoUrl = hotel.main_photo_url.replace('square60', '1024x720');

@@ -55,7 +55,7 @@ export class RapidAPIService extends CachingService {
       arrival_date: formatDate(query.checkIn, 'YYYY-MM-DD'),
       departure_date: formatDate(query.checkOut, 'YYYY-MM-DD'),
       guest_qty: query.guests,
-      dest_ids: query.search,
+      dest_ids: query.destination,
       // room_qty: '1',
       // search_type: 'city',
       // children_age: '5,7',
