@@ -3,6 +3,7 @@ import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryCol
 import { AmenityEntity } from './amenity.entity';
 import { RegionEntity } from './../region/region.entity';
 import { BookingEntity } from './../booking/booking.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'hotels' })
 export class HotelEntity {
@@ -42,9 +43,16 @@ export class HotelEntity {
   @ManyToOne(() => RegionEntity, (region) => region.hotels)
   region: RegionEntity;
 
-  @ManyToMany(() => AmenityEntity)
-  @JoinTable()
+  @ManyToMany(() => AmenityEntity, (amenity) => amenity.hotels)
+  @JoinTable({
+    name: 'hotel_amenities',
+    joinColumn: { name: 'hotel_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'amenity_id', referencedColumnName: 'id' },
+  })
   amenities: AmenityEntity[];
+
+  @ManyToMany(() => UserEntity, (user) => user.favoriteHotels)
+  favoritedByUsers: UserEntity[];
 
   @OneToMany(() => BookingEntity, (booking) => booking.hotel)
   bookings: BookingEntity[];
