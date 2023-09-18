@@ -1,13 +1,18 @@
 import { Body, Controller, Post, Res, Get, Req, UseGuards, NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 
+import { UserEntity } from '../user/user.entity';
 import { LoginDto } from './dto/LoginDto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('login')
   async login(@Body() body: LoginDto, @Res() res: Response) {
@@ -33,8 +38,15 @@ export class AuthController {
   }
 
   @Get('check')
-  @UseGuards(JwtAuthGuard)
   async checkAuth(@Req() req) {
-    return { authenticated: true, user: req.user };
+    try {
+      const token = req.cookies['access_token'] || req.headers.authorization?.split(' ')[1];
+      if (!token) return { authenticated: false, userId: null };
+      
+      const decoded = this.jwtService.verify(token);
+      return { authenticated: true, userId: decoded['id'] };
+    } catch (e) {
+      return { authenticated: false, userId: null };
+    }
   }
 }

@@ -22,7 +22,7 @@ export class SearchHotelsDto {
 
   @IsOptional()
   @IsNumberString()
-  limit?: string;
+  limit: string;
 
   @IsNumberString()
   page: string;

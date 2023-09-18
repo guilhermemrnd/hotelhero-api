@@ -136,7 +136,7 @@ export class HotelService {
     try {
       const { userId, destination, minPrice, maxPrice, amenities, ratings } = query;
 
-      const limit = Number(query?.limit) ?? '10';
+      const limit = Number(query.limit);
       const page = Number(query.page);
 
       const queryBuilder = this.hotelRepository
