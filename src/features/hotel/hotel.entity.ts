@@ -16,10 +16,10 @@ export class HotelEntity {
   @Column({ name: 'address', length: 255, nullable: false })
   address: string;
 
-  @Column({ type: 'float', name: 'rating' })
+  @Column({ type: 'float', name: 'rating', nullable: true })
   rating: number;
 
-  @Column({ name: 'number_of_reviews' })
+  @Column({ name: 'number_of_reviews', nullable: true })
   numberOfReviews: number;
 
   @Column({ name: 'daily_price', type: 'float', nullable: false })
