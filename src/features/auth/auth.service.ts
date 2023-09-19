@@ -23,8 +23,9 @@ export class AuthService {
     return null;
   }
 
-  public async generateJWT(user: UserEntity) {
+  public async generateJWT(user: UserEntity, rememberMe: boolean) {
     const payload = { email: user.email, sub: user.id };
-    return this.jwtService.sign(payload);
+    const expiresIn = rememberMe ? '7d' : '1d';
+    return this.jwtService.sign(payload, { expiresIn });
   }
 }

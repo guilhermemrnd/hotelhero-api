@@ -2,7 +2,6 @@ import { Body, Controller, Post, Res, Get, Req, UseGuards, NotFoundException } f
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 
-import { UserEntity } from '../user/user.entity';
 import { LoginDto } from './dto/LoginDto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -19,7 +18,7 @@ export class AuthController {
     const user = await this.authService.validateUser(body.email, body.password);
     if (!user) throw new NotFoundException('Invalid credentials');
 
-    const jwt = await this.authService.generateJWT(user);
+    const jwt = await this.authService.generateJWT(user, body?.rememberMe);
 
     const cookieOptions = { httpOnly: true };
     if (body?.rememberMe) {
@@ -42,7 +41,7 @@ export class AuthController {
     try {
       const token = req.cookies['access_token'] || req.headers.authorization?.split(' ')[1];
       if (!token) return { authenticated: false, userId: null };
-      
+
       const decoded = this.jwtService.verify(token);
       return { authenticated: true, userId: decoded['id'] };
     } catch (e) {
