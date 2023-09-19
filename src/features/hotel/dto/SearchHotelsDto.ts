@@ -1,4 +1,4 @@
-import { IsIn, IsNumberString, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsIn, IsNumberString, IsOptional, IsString, IsUUID } from 'class-validator';
 import { IsDateStringFormat } from '../validation/is-date-string-format.validator';
 
 export class SearchHotelsDto {
@@ -36,11 +36,10 @@ export class SearchHotelsDto {
   maxPrice?: string;
 
   @IsOptional()
-  @IsString({ each: true })
-  amenities?: string[];
+  @IsString()
+  amenities?: string;
 
   @IsOptional()
-  @IsString({ each: true })
-  @IsIn(['2', '3', '4', '5', 'unrated'], { each: true })
-  ratings?: string[];
+  @IsString()
+  ratings?: string;
 }

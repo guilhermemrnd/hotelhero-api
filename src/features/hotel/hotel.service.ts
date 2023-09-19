@@ -162,21 +162,14 @@ export class HotelService {
       }
 
       if (amenities && amenities.length > 0) {
+        const amenitiesArray = amenities.split(',');
         queryBuilder
           .leftJoinAndSelect('hotel.amenities', 'amenity')
-          .andWhere('hotel.amenities IN (:...amenities)', { amenities });
+          .andWhere('hotel.amenities IN (:...amenitiesArray)', { amenitiesArray });
       }
 
       if (ratings && ratings.length > 0) {
-        const ratingQueries = ratings.map((rating) => {
-          if (rating === 'unrated') {
-            return 'hotel.rating IS NULL';
-          } else {
-            return `hotel.rating >= ${+rating} AND hotel.rating < ${parseInt(rating) + 1}`;
-          }
-        });
-
-        queryBuilder.andWhere(`(${ratingQueries.join(' OR ')})`);
+        this.buildRatingsQuery(queryBuilder, ratings);
       }
 
       queryBuilder.limit(limit).offset((page - 1) * limit);
@@ -185,6 +178,45 @@ export class HotelService {
     } catch (e) {
       console.error('Error building query:', e);
       throw new InternalServerErrorException('Error building query', e.toString());
+    }
+  }
+
+  private buildRatingsQuery(queryBuilder: any, ratings: string) {
+    const ratingsArray = ratings.split(',');
+
+    const conditions: string[] = [];
+    const parameters = {};
+
+    ratingsArray.forEach((rating, index) => {
+      const paramName = `rate${index}`;
+      let condition: string;
+
+      switch (rating) {
+        case 'twoStars':
+          condition = 'hotel.rating >= 2 AND hotel.rating < 3';
+          break;
+        case 'threeStars':
+          condition = 'hotel.rating >= 3 AND hotel.rating < 4';
+          break;
+        case 'fourStars':
+          condition = 'hotel.rating >= 4 AND hotel.rating < 5';
+          break;
+        case 'fiveStars':
+          condition = 'hotel.rating = 5';
+          break;
+        case 'unrated':
+          condition = 'hotel.rating IS NULL';
+          break;
+        default:
+          throw new BadRequestException('Invalid rating');
+      }
+
+      conditions.push(condition);
+      parameters[paramName] = rating;
+    });
+
+    if (conditions.length > 0) {
+      queryBuilder.where(`(${conditions.join(') OR (')})`, parameters);
     }
   }
 
