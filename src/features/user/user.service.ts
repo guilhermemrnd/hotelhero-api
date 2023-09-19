@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -80,22 +85,30 @@ export class UserService {
   }
 
   public async toggleFavorite(userId: string, hotelId: number, isFavorite: boolean) {
-    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['favoriteHotels'] });
-    const hotel = await this.hotelRepository.findOneBy({ id: hotelId });
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['favoriteHotels'],
+      });
+      const hotel = await this.hotelRepository.findOneBy({ id: hotelId });
 
-    if (!user || !hotel) {
-      throw new NotFoundException('User or hotel not found');
-    }
-
-    if (isFavorite) {
-      if (!user?.favoriteHotels.some((favHotel) => favHotel.id === hotel.id)) {
-        user.favoriteHotels.push(hotel);
+      if (!user || !hotel) {
+        throw new NotFoundException('User or hotel not found');
       }
-    } else {
-      user.favoriteHotels = user.favoriteHotels.filter((favHotel) => favHotel.id !== hotel.id);
-    }
 
-    await this.userRepository.save(user);
+      if (isFavorite) {
+        if (!user?.favoriteHotels.some((favHotel) => favHotel.id === hotel.id)) {
+          user.favoriteHotels.push(hotel);
+        }
+      } else {
+        user.favoriteHotels = user.favoriteHotels.filter((favHotel) => favHotel.id !== hotel.id);
+      }
+
+      await this.userRepository.save(user);
+    } catch (err) {
+      console.error('Error in toggleFavorite.', err);
+      throw new InternalServerErrorException('Failed to toggle favorite status');
+    }
   }
 
   private async checkIfUserExists(email: string): Promise<void> {

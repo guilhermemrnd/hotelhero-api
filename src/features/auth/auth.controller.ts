@@ -43,7 +43,7 @@ export class AuthController {
       if (!token) return { authenticated: false, userId: null };
 
       const decoded = this.jwtService.verify(token);
-      return { authenticated: true, userId: decoded['id'] };
+      return { authenticated: true, userId: decoded['sub'] };
     } catch (e) {
       return { authenticated: false, userId: null };
     }

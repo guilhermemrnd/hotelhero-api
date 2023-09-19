@@ -12,6 +12,7 @@ import { HotelEntity } from './hotel.entity';
 import { RegionEntity } from '../region/region.entity';
 import { AmenityEntity } from './amenity.entity';
 import { BookingEntity } from './../booking/booking.entity';
+import { UserEntity } from '../user/user.entity';
 import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
 import { FindHotelByIdDto } from './dto/FindHotelByIdDto';
@@ -31,6 +32,8 @@ export class HotelService {
     private readonly amenityRepository: Repository<AmenityEntity>,
     @InjectRepository(BookingEntity)
     private readonly bookingRepository: Repository<BookingEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
     private readonly rapidAPIService: RapidAPIService,
   ) {}
 
@@ -50,10 +53,20 @@ export class HotelService {
         hotels = await this.hotelRepository.save(hotelEntities);
       }
 
-      return { data: hotels, total, page: +query.page, limit: Number(query?.limit) ?? 10 };
+      const user = await this.userRepository.findOne({
+        where: { id: query.userId },
+        relations: ['favoriteHotels'],
+      });
+      const favoriteHotelsIds = user ? user.favoriteHotels.map((h) => h.id) : [];
+
+      const enrichedHotels = hotels.map((hotel) => {
+        return { ...hotel, isFavorite: favoriteHotelsIds.includes(hotel.id) };
+      });
+
+      return { data: enrichedHotels, total, page: +query.page, limit: +query.limit };
     } catch (e) {
       console.error('Error finding hotels.', e);
-      throw new InternalServerErrorException('Error finding hotels', e.toString());
+      throw new InternalServerErrorException('Error finding hotels');
     }
   }
 
