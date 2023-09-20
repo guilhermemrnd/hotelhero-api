@@ -17,9 +17,10 @@ import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
 import { FindHotelByIdDto } from './dto/FindHotelByIdDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
-import { HotelResponseDto } from './dto/HotelResponseDto';
+import { EnrichedHotel, HotelResponseDto } from './dto/HotelResponseDto';
 import { HotelPhotosResponse } from './../../common/rapid-api/interfaces/hotel-photos-response';
 import { RapidAPIService } from './../../common/rapid-api/rapid-api.service';
+import { HotelDetailResponse } from 'src/common/rapid-api/interfaces/hotel-detail-response';
 
 @Injectable()
 export class HotelService {
@@ -48,36 +49,38 @@ export class HotelService {
 
       let [hotels, total] = await queryBuilder.getManyAndCount();
 
-      if (hotels?.length === 0) {
+      if (hotels.length === 0) {
         const hotelEntities = await this.createHotelsFromAPI(query);
         hotels = await this.hotelRepository.save(hotelEntities);
       }
 
-      const user = await this.userRepository.findOne({
-        where: { id: query.userId },
-        relations: ['favoriteHotels'],
-      });
-      const favoriteHotelsIds = user ? user.favoriteHotels.map((h) => h.id) : [];
+      if (query.userId) {
+        hotels = await this.addIsFavoriteProp(query.userId, hotels);
+      }
 
-      const enrichedHotels = hotels.map((hotel) => {
-        return { ...hotel, isFavorite: favoriteHotelsIds.includes(hotel.id) };
-      });
-
-      return { data: enrichedHotels, total, page: +query.page, limit: +query.limit };
+      return { data: hotels, total, page: +query.page, limit: +query.limit };
     } catch (e) {
       console.error('Error finding hotels.', e);
       throw new InternalServerErrorException('Error finding hotels');
     }
   }
 
-  public async findHotelById(query: FindHotelByIdDto): Promise<HotelEntity> {
-    const hotel = await this.hotelRepository.findOneBy({ id: +query.hotelId });
+  public async findHotelById(query: FindHotelByIdDto): Promise<EnrichedHotel> {
+    const hotel = await this.hotelRepository.findOne({
+      where: { id: +query.hotelId },
+      relations: ['amenities', 'bookings'],
+    });
 
     if (!hotel) throw new NotFoundException('Hotel not found');
 
     if (this.needsUpdate(hotel) && query) {
       const updatedHotel = await this.updateHotelInfo(hotel, query);
       return await this.hotelRepository.save(updatedHotel);
+    }
+
+    if (query.userId) {
+      const favoriteHotelsIds = await this.getFavoriteHotelIds(query.userId);
+      return { ...hotel, isFavorite: favoriteHotelsIds.includes(hotel.id) };
     }
 
     return hotel;
@@ -260,9 +263,22 @@ export class HotelService {
     return hotelEntities;
   }
 
+  private async getFavoriteHotelIds(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteHotels'],
+    });
+    return user?.favoriteHotels.map((hotel) => hotel.id) ?? [];
+  }
+
+  private async addIsFavoriteProp(userId: string, hotels: HotelEntity[]): Promise<EnrichedHotel[]> {
+    const favoriteHotelsIds = await this.getFavoriteHotelIds(userId);
+    return hotels.map((hotel) => ({ ...hotel, isFavorite: favoriteHotelsIds.includes(hotel.id) }));
+  }
+
   // find-hotel-by-id helper methods
   private needsUpdate(hotel: HotelEntity): boolean {
-    return !hotel?.maxGuests || !hotel?.amenities || hotel?.photos.length === 1;
+    return hotel?.amenities.length === 1 || hotel?.photos.length === 1 || !hotel?.description;
   }
 
   private async updateHotelInfo(hotel: HotelEntity, query: FindHotelByIdDto): Promise<HotelEntity> {
@@ -272,15 +288,15 @@ export class HotelService {
 
     const { details, photosUrl, mainDescription } = apiData;
 
+    const allAmenities = await this.resolveAmenities(details);
+
     return this.hotelRepository.create({
       ...hotel,
       description: mainDescription[0]?.description,
       maxGuests: details.block?.[0]?.nr_adults,
       bathrooms: details.block?.[0]?.number_of_bathrooms,
       photos: photosUrl,
-      amenities: details.property_highlight_strip?.map((amenity) => {
-        return this.amenityRepository.create({ name: amenity.name });
-      }),
+      amenities: allAmenities,
     });
   }
 
@@ -309,6 +325,24 @@ export class HotelService {
     }
 
     return max1024x768Urls;
+  }
+
+  private async resolveAmenities(details: HotelDetailResponse) {
+    const amenityNames = details.property_highlight_strip?.map((a) => a.name) ?? [];
+
+    const existingAmenities = await this.amenityRepository.findBy({ name: In(amenityNames) });
+    const existingAmenityNames = existingAmenities.map((a) => a.name);
+
+    const newAmenities = amenityNames
+      .filter((name) => !existingAmenityNames.includes(name))
+      .map((name) => ({ name }));
+
+    if (newAmenities.length > 0) {
+      await this.amenityRepository.save(newAmenities);
+    }
+
+    const allAmenities = await this.amenityRepository.findBy({ name: In(amenityNames) });
+    return allAmenities;
   }
 
   // update-hotel helper methods

@@ -7,6 +7,6 @@ export class HotelResponseDto {
   limit: number;
 }
 
-interface EnrichedHotel extends HotelEntity {
-  isFavorite: boolean;
+export interface EnrichedHotel extends HotelEntity {
+  isFavorite?: boolean;
 }
