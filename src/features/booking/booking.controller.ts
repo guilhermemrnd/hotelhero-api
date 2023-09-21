@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { BookingEntity } from './booking.entity';
 import { CreateBookingDto } from './dto/CreateBookingDto';
 import { UpdateBookingDto } from './dto/UpdateBookingDto';
-import { BookingEntity } from './booking.entity';
+import { FinalizeBookingDto } from './dto/FinalizeBookingDto';
+
 import { BookingService } from './booking.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('bookings')
 export class BookingController {
@@ -28,5 +30,11 @@ export class BookingController {
   async updateBooking(@Param('id') id: string, @Body() newData: UpdateBookingDto) {
     const updatedBooking = await this.bookingService.updateBooking(id, newData);
     return { data: updatedBooking, message: 'Booking updated successfully' };
+  }
+
+  @Patch(':id/finalize')
+  @UseGuards(JwtAuthGuard)
+  async finalizeBooking(@Param('id') bookingId: string, @Body() body: FinalizeBookingDto) {
+    return this.bookingService.finalizeBooking(bookingId, body.paymentId);
   }
 }

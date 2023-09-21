@@ -24,8 +24,4 @@ export class CreateBookingDto {
   @IsInt()
   @IsNotEmpty()
   totalCost: number;
-
-  @IsString()
-  @IsNotEmpty()
-  bookingStatus: string;
 }

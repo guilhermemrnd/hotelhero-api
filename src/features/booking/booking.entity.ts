@@ -33,8 +33,11 @@ export class BookingEntity {
   @Column({ name: 'total_cost', nullable: false })
   totalCost: number;
 
-  @Column({ name: 'booking_status', nullable: false })
-  bookingStatus: string;
+  @Column({ name: 'is_paid', default: false })
+  isPaid: boolean;
+
+  @Column({ name: 'payment_id', nullable: true })
+  paymentId: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string;

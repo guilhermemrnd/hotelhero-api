@@ -57,6 +57,15 @@ export class BookingService {
     return await this.bookingRepository.save(booking);
   }
 
+  public async finalizeBooking(bookingId: string, paymentId: string): Promise<BookingEntity> {
+    const booking = await this.findBookingById(bookingId);
+
+    booking.isPaid = true;
+    booking.paymentId = paymentId;
+
+    return await this.bookingRepository.save(booking);
+  }
+
   private async findUserAndHotel(userId: string, hotelId: number) {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('User not found');
@@ -68,14 +77,6 @@ export class BookingService {
   }
 
   private createBookingEntity(user: UserEntity, hotel: HotelEntity, booking: CreateBookingDto) {
-    return this.bookingRepository.create({
-      user: user,
-      hotel: hotel,
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-      numberOfGuests: booking.numberOfGuests,
-      totalCost: booking.totalCost,
-      bookingStatus: booking.bookingStatus,
-    });
+    return this.bookingRepository.create({ ...booking, user: user, hotel: hotel });
   }
 }

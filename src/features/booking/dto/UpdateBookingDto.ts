@@ -4,25 +4,20 @@ export class UpdateBookingDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  checkIn: string;
+  checkIn?: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  checkOut: string;
+  checkOut?: string;
 
   @IsOptional()
   @IsInt()
   @IsNotEmpty()
-  numberOfGuests: number;
+  numberOfGuests?: number;
 
   @IsOptional()
   @IsInt()
   @IsNotEmpty()
-  totalCost: number;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  bookingStatus: string;
+  totalCost?: number;
 }
