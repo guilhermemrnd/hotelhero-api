@@ -24,8 +24,13 @@ export class HotelController {
   }
 
   @Get('/detail')
-  async findHotelById(@Query() query: FindHotelByIdDto): Promise<HotelEntity> {
-    return await this.hotelService.findHotelById(query);
+  async findHotelDetails(@Query() query: FindHotelByIdDto): Promise<HotelEntity> {
+    return await this.hotelService.findHotelDetails(query);
+  }
+
+  @Get(':id')
+  async findHotelById(@Param('id') id: string): Promise<HotelEntity> {
+    return await this.hotelService.findHotelById(+id);
   }
 
   @Get(':id/bookings')

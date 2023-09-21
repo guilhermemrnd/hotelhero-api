@@ -65,7 +65,15 @@ export class HotelService {
     }
   }
 
-  public async findHotelById(query: FindHotelByIdDto): Promise<EnrichedHotel> {
+  public async findHotelById(id: number): Promise<HotelEntity> {
+    const hotel = await this.hotelRepository.findOneBy({ id });
+
+    if (!hotel) throw new NotFoundException('Hotel not found');
+
+    return hotel;
+  }
+
+  public async findHotelDetails(query: FindHotelByIdDto): Promise<EnrichedHotel> {
     const hotel = await this.hotelRepository.findOne({
       where: { id: +query.hotelId },
       relations: ['amenities', 'bookings'],
@@ -100,7 +108,7 @@ export class HotelService {
   }
 
   public async updateHotel(id: string, newData: UpdateHotelDto): Promise<HotelEntity> {
-    const hotel = await this.findHotelById({ hotelId: id });
+    const hotel = await this.findHotelDetails({ hotelId: id });
 
     if (newData?.amenities) {
       const foundAmenities = await this.findAmenitiesByName(newData.amenities);
