@@ -26,10 +26,15 @@ export class BookingService {
       .createQueryBuilder('booking')
       .innerJoin('booking.hotel', 'hotel')
       .where('hotel.id = :hotelId', { hotelId: +booking.hotelId })
-      .andWhere('booking.checkIn < :checkOut OR booking.checkIn = :checkIn', {
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-      })
+      .andWhere(
+        '(booking.checkIn <= :checkIn AND booking.checkOut > :checkIn) OR ' +
+          '(booking.checkIn < :checkOut AND booking.checkOut >= :checkOut) OR ' +
+          '(booking.checkIn >= :checkIn AND booking.checkOut <= :checkOut)',
+        {
+          checkIn: booking.checkIn,
+          checkOut: booking.checkOut,
+        },
+      )
       .getOne();
 
     if (existingBooking) {
@@ -37,12 +42,13 @@ export class BookingService {
     }
 
     const bookingEntity = this.createBookingEntity(user, hotel, booking);
+    bookingEntity.id = await this.generateUniqueId();
 
     return await this.bookingRepository.save(bookingEntity);
   }
 
   public async findBookingById(id: string): Promise<BookingEntity> {
-    const booking = await this.bookingRepository.findOneBy({ id });
+    const booking = await this.bookingRepository.findOne({ where: { id }, relations: ['hotel'] });
 
     if (!booking) throw new NotFoundException('Booking not found');
 
@@ -50,10 +56,10 @@ export class BookingService {
   }
 
   public async updateBooking(id: string, newData: UpdateBookingDto): Promise<BookingEntity> {
-    const booking = await this.findBookingById(id);
+    const booking = await this.bookingRepository.findOneBy({ id });
+    if (!booking) throw new NotFoundException('Booking not found');
 
     Object.assign(booking, newData as BookingEntity);
-
     return await this.bookingRepository.save(booking);
   }
 
@@ -78,5 +84,36 @@ export class BookingService {
 
   private createBookingEntity(user: UserEntity, hotel: HotelEntity, booking: CreateBookingDto) {
     return this.bookingRepository.create({ ...booking, user: user, hotel: hotel });
+  }
+
+  private async generateUniqueId(): Promise<string> {
+    const maxRetries = 5;
+    let retries = 0;
+
+    while (retries < maxRetries) {
+      const generatedId = this.generateCustomId();
+      const exists = await this.checkIdUniqueness(generatedId);
+
+      if (!exists) return generatedId;
+
+      retries++;
+    }
+
+    throw new Error('Failed to generate unique id');
+  }
+
+  private generateCustomId(length = 10): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * chars.length);
+      result += chars[randomIndex];
+    }
+    return result;
+  }
+
+  private async checkIdUniqueness(id: string): Promise<boolean> {
+    const existingId = await this.bookingRepository.findOneBy({ id });
+    return !!existingId;
   }
 }

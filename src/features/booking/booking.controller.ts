@@ -35,6 +35,6 @@ export class BookingController {
   @Patch(':id/finalize')
   @UseGuards(JwtAuthGuard)
   async finalizeBooking(@Param('id') bookingId: string, @Body() body: FinalizeBookingDto) {
-    return this.bookingService.finalizeBooking(bookingId, body.paymentId);
+    return await this.bookingService.finalizeBooking(bookingId, body.paymentId);
   }
 }
