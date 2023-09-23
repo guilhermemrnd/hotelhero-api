@@ -83,7 +83,7 @@ export class BookingService {
   }
 
   private createBookingEntity(user: UserEntity, hotel: HotelEntity, booking: CreateBookingDto) {
-    return this.bookingRepository.create({ ...booking, user: user, hotel: hotel });
+    return this.bookingRepository.create({ ...booking, user: user, hotel });
   }
 
   private async generateUniqueId(): Promise<string> {

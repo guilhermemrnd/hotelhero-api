@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { HotelEntity } from './hotel.entity';
 import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
-import { FindHotelByIdDto } from './dto/FindHotelByIdDto';
+import { FindHotelDetailsDto } from './dto/FindHotelDetailsDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
 import { HotelResponseDto } from './dto/HotelResponseDto';
 import { HotelService } from './hotel.service';
@@ -24,13 +24,18 @@ export class HotelController {
   }
 
   @Get('/detail')
-  async findHotelDetails(@Query() query: FindHotelByIdDto): Promise<HotelEntity> {
+  async findHotelDetails(@Query() query: FindHotelDetailsDto): Promise<HotelEntity> {
     return await this.hotelService.findHotelDetails(query);
   }
 
   @Get(':id')
   async findHotelById(@Param('id') id: string): Promise<HotelEntity> {
     return await this.hotelService.findHotelById(+id);
+  }
+
+  @Get(':id/unavailable-dates')
+  async findHotelUnavailableDates(@Param('id') hotelId: string): Promise<{ dates: string[] }> {
+    return await this.hotelService.findHotelUnavailableDates(+hotelId);
   }
 
   @Get(':id/bookings')

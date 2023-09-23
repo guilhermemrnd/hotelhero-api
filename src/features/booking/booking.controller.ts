@@ -35,6 +35,7 @@ export class BookingController {
   @Patch(':id/finalize')
   @UseGuards(JwtAuthGuard)
   async finalizeBooking(@Param('id') bookingId: string, @Body() body: FinalizeBookingDto) {
-    return await this.bookingService.finalizeBooking(bookingId, body.paymentId);
+    const finalizedBooking = await this.bookingService.finalizeBooking(bookingId, body.paymentId);
+    return { data: finalizedBooking, message: 'Booking finalized successfully' };
   }
 }

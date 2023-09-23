@@ -2,7 +2,7 @@ import { IsNumberString, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { IsDateStringFormat } from '../validation/is-date-string-format.validator';
 
-export class FindHotelByIdDto {
+export class FindHotelDetailsDto {
   @IsOptional()
   @IsUUID()
   userId?: string;

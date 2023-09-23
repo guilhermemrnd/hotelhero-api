@@ -15,7 +15,7 @@ import { BookingEntity } from './../booking/booking.entity';
 import { UserEntity } from '../user/user.entity';
 import { CreateHotelDto } from './dto/CreateHotelDto';
 import { SearchHotelsDto } from './dto/SearchHotelsDto';
-import { FindHotelByIdDto } from './dto/FindHotelByIdDto';
+import { FindHotelDetailsDto } from './dto/FindHotelDetailsDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
 import { EnrichedHotel, HotelResponseDto } from './dto/HotelResponseDto';
 import { HotelPhotosResponse } from './../../common/rapid-api/interfaces/hotel-photos-response';
@@ -25,6 +25,7 @@ import { HotelDetailResponse } from 'src/common/rapid-api/interfaces/hotel-detai
 @Injectable()
 export class HotelService {
   constructor(
+    private readonly rapidAPIService: RapidAPIService,
     @InjectRepository(HotelEntity)
     private readonly hotelRepository: Repository<HotelEntity>,
     @InjectRepository(RegionEntity)
@@ -35,7 +36,6 @@ export class HotelService {
     private readonly bookingRepository: Repository<BookingEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    private readonly rapidAPIService: RapidAPIService,
   ) {}
 
   public async createHotel(hotelData: CreateHotelDto): Promise<HotelEntity> {
@@ -52,6 +52,7 @@ export class HotelService {
       if (hotels.length === 0) {
         const hotelEntities = await this.createHotelsFromAPI(query);
         hotels = await this.hotelRepository.save(hotelEntities);
+        total = hotels.length;
       }
 
       if (query.userId) {
@@ -73,10 +74,10 @@ export class HotelService {
     return hotel;
   }
 
-  public async findHotelDetails(query: FindHotelByIdDto): Promise<EnrichedHotel> {
+  public async findHotelDetails(query: FindHotelDetailsDto): Promise<EnrichedHotel> {
     const hotel = await this.hotelRepository.findOne({
       where: { id: +query.hotelId },
-      relations: ['amenities', 'bookings'],
+      relations: ['amenities'],
     });
 
     if (!hotel) throw new NotFoundException('Hotel not found');
@@ -92,6 +93,18 @@ export class HotelService {
     }
 
     return hotel;
+  }
+
+  public async findHotelUnavailableDates(hotelId: number): Promise<{ dates: string[] }> {
+    const hotelBookings = await this.findHotelBookings(hotelId);
+
+    const unavailableDates = hotelBookings.map((booking) => {
+      const { checkIn, checkOut } = booking;
+      const dates = this.getDatesBetween(checkIn, checkOut);
+      return dates;
+    });
+
+    return { dates: unavailableDates.flat() };
   }
 
   public async findHotelBookings(hotelId: number): Promise<BookingEntity[]> {
@@ -289,7 +302,7 @@ export class HotelService {
     return hotel?.amenities.length === 1 || hotel?.photos.length === 1 || !hotel?.description;
   }
 
-  private async updateHotelInfo(hotel: HotelEntity, query: FindHotelByIdDto): Promise<HotelEntity> {
+  private async updateHotelInfo(hotel: HotelEntity, query: FindHotelDetailsDto): Promise<HotelEntity> {
     const apiData = await this.fetchDataFromRapidAPI(query);
 
     if (!apiData) return hotel;
@@ -308,7 +321,7 @@ export class HotelService {
     });
   }
 
-  private async fetchDataFromRapidAPI(query: FindHotelByIdDto) {
+  private async fetchDataFromRapidAPI(query: FindHotelDetailsDto) {
     const { details, photos, descriptions } = await this.rapidAPIService.fetchHotelById(query);
 
     const photosUrl = this.getPhotosUrl(photos, query.hotelId);
@@ -364,5 +377,20 @@ export class HotelService {
         }
       }
     }
+  }
+
+  // hotel-unavailable-dates helper methods
+  private getDatesBetween(checkIn: string, checkOut: string): string[] {
+    const startDate = new Date(checkIn);
+    const endDate = new Date(checkOut);
+
+    const dates: string[] = [];
+
+    while (startDate < endDate) {
+      dates.push(startDate.toISOString().split('T')[0]);
+      startDate.setDate(startDate.getDate() + 1);
+    }
+
+    return dates;
   }
 }

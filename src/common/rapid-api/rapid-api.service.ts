@@ -10,7 +10,7 @@ import { HotelDetailResponse } from './interfaces/hotel-detail-response';
 import { HotelPhotosResponse } from './interfaces/hotel-photos-response';
 import { HotelDescriptionResponse } from './interfaces/hotel-description-response';
 import { SearchHotelsDto } from './../../features/hotel/dto/SearchHotelsDto';
-import { FindHotelByIdDto } from './../../features/hotel/dto/FindHotelByIdDto';
+import { FindHotelDetailsDto } from '../../features/hotel/dto/FindHotelDetailsDto';
 import { CachingService } from './caching.service';
 import { formatDate } from './../moment-utils';
 
@@ -42,7 +42,7 @@ export class RapidAPIService extends CachingService {
     return this.cacheAndFetch<HotelsListResponse>(cacheKey, url, options);
   }
 
-  public async fetchHotelById(query: FindHotelByIdDto) {
+  public async fetchHotelById(query: FindHotelDetailsDto) {
     const details = await firstValueFrom(this.fetchHotelDetails(query));
     const photos = await firstValueFrom(this.fetchHotelPhotos(query));
     const descriptions = await firstValueFrom(this.fetchHotelDescription(query));
@@ -67,7 +67,7 @@ export class RapidAPIService extends CachingService {
     };
   }
 
-  private fetchHotelDetails(query: FindHotelByIdDto): Observable<HotelDetailResponse[]> {
+  private fetchHotelDetails(query: FindHotelDetailsDto): Observable<HotelDetailResponse[]> {
     const params = this.getParamsToFetchHotelDetails(query);
     const options = { params, headers: this.headers } as Object;
     const url = `${this.API}/properties/detail`;
@@ -75,7 +75,7 @@ export class RapidAPIService extends CachingService {
     return this.cacheAndFetch<HotelDetailResponse[]>(cacheKey, url, options);
   }
 
-  private getParamsToFetchHotelDetails(query: FindHotelByIdDto) {
+  private getParamsToFetchHotelDetails(query: FindHotelDetailsDto) {
     if (!query?.checkIn || !query?.checkOut) {
       throw new BadRequestException('Check-in and check-out dates are required');
     }
@@ -95,7 +95,7 @@ export class RapidAPIService extends CachingService {
     };
   }
 
-  private fetchHotelPhotos(query: FindHotelByIdDto): Observable<HotelPhotosResponse> {
+  private fetchHotelPhotos(query: FindHotelDetailsDto): Observable<HotelPhotosResponse> {
     const params = { hotel_ids: query.hotelId, languagecode: Language.en_US };
     const options = { params, headers: this.headers } as Object;
     const url = `${this.API}/properties/get-hotel-photos`;
@@ -103,7 +103,7 @@ export class RapidAPIService extends CachingService {
     return this.cacheAndFetch<HotelPhotosResponse>(cacheKey, url, options);
   }
 
-  private fetchHotelDescription(query: FindHotelByIdDto): Observable<HotelDescriptionResponse[]> {
+  private fetchHotelDescription(query: FindHotelDetailsDto): Observable<HotelDescriptionResponse[]> {
     const params = { hotel_ids: query.hotelId, languagecode: Language.en_US };
     const options = { params, headers: this.headers } as Object;
     const url = `${this.API}/properties/get-description`;
