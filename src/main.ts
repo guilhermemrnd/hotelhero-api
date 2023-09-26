@@ -13,7 +13,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: ['http://localhost:4200', 'https://hotelhero.vercel.app'],
     credentials: true,
   });
   app.use(cookieParser());
