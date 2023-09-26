@@ -12,6 +12,7 @@ import {
 
 import { BookingEntity } from './../booking/booking.entity';
 import { HotelEntity } from '../hotel/hotel.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'users' })
 @Unique(['email'])
@@ -25,6 +26,7 @@ export class UserEntity {
   @Column({ name: 'email', length: 75, nullable: false, unique: true })
   email: string;
 
+  @Exclude()
   @Column({ name: 'password', length: 255, nullable: false })
   password: string;
 
