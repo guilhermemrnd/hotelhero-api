@@ -30,10 +30,6 @@ import { RegionModule } from './features/region/region.module';
       provide: APP_FILTER,
       useClass: GlobalFilterException,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ClassSerializerInterceptor
-    }
   ],
 })
 export class AppModule {}

@@ -73,6 +73,10 @@ export class UserService {
   public async updateUser(id: string, newData: UpdateUserDto): Promise<UserEntity> {
     const user = await this.findUserById(id);
 
+    if (newData.password) {
+      newData.password = await bcrypt.hash(newData.password, 8);
+    }
+
     Object.assign(user, newData as UserEntity);
 
     return await this.userRepository.save(user);
