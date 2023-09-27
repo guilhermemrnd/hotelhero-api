@@ -1,9 +1,19 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 
 import { AmenityEntity } from './amenity.entity';
 import { RegionEntity } from './../region/region.entity';
 import { BookingEntity } from './../booking/booking.entity';
 import { UserEntity } from '../user/user.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'hotels' })
 export class HotelEntity {
@@ -41,6 +51,7 @@ export class HotelEntity {
   bathrooms: number;
 
   @ManyToOne(() => RegionEntity, (region) => region.hotels)
+  @JoinColumn({ name: 'region_id' })
   region: RegionEntity;
 
   @ManyToMany(() => AmenityEntity, (amenity) => amenity.hotels)
@@ -51,6 +62,7 @@ export class HotelEntity {
   })
   amenities: AmenityEntity[];
 
+  @Exclude()
   @ManyToMany(() => UserEntity, (user) => user.favoriteHotels)
   favoritedByUsers: UserEntity[];
 

@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 
 import { UserEntity } from './../user/user.entity';
 import { HotelEntity } from './../hotel/hotel.entity';
@@ -9,9 +17,11 @@ export class BookingEntity {
   id: string;
 
   @ManyToOne(() => UserEntity, (user) => user.bookings)
+  @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   @ManyToOne(() => HotelEntity, (hotel) => hotel.bookings)
+  @JoinColumn({ name: 'hotel_id' })
   hotel: HotelEntity;
 
   @Column({ name: 'check_in', nullable: false })
