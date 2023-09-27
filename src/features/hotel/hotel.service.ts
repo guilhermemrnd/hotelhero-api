@@ -19,8 +19,8 @@ import { FindHotelDetailsDto } from './dto/FindHotelDetailsDto';
 import { UpdateHotelDto } from './dto/UpdateHotelDto';
 import { EnrichedHotel, HotelResponseDto } from './dto/HotelResponseDto';
 import { HotelPhotosResponse } from './../../common/rapid-api/interfaces/hotel-photos-response';
+import { HotelDetailResponse } from './../../common/rapid-api/interfaces/hotel-detail-response';
 import { RapidAPIService } from './../../common/rapid-api/rapid-api.service';
-import { HotelDetailResponse } from 'src/common/rapid-api/interfaces/hotel-detail-response';
 
 @Injectable()
 export class HotelService {
