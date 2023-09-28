@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Res, Get, Req, UseGuards, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
+import { Response, CookieOptions } from 'express';
+import 'dotenv/config'
 
 import { LoginDto } from './dto/LoginDto';
 import { AuthService } from './auth.service';
@@ -20,9 +21,17 @@ export class AuthController {
 
     const jwt = await this.authService.generateJWT(user, body?.rememberMe);
 
-    const cookieOptions = { httpOnly: true };
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'none',
+    };
+
     if (body?.rememberMe) {
-      cookieOptions['expires'] = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      const expiryTime = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
+      cookieOptions['expires'] = expiryTime;
     }
 
     res.cookie('access_token', jwt, cookieOptions);
