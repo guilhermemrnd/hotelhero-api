@@ -1,73 +1,57 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# HotelHero API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Introdução
+Esta API serve como o backend principal para a aplicação HotelHero. Seu principal objetivo é se conectar com uma API externa da RapidAPI, persistir os dados recuperados em um banco de dados Postgres e, posteriormente, fornecer esses dados para o frontend.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tecnologias Utilizadas
+- **Node.js & Express:** Estes formam o runtime principal e o framework para construir o backend.
+- **NestJS:** Escolhido por sua escalabilidade e capacidades de desenvolvimento rápido, o NestJS traz uma arquitetura modular, tornando mais fácil organizar e escalar o backend. Ele também se integra bem com TypeScript, garantindo segurança de tipo e melhorando a produtividade do desenvolvedor.
+- **TypeORM:** Este ORM foi usado para abstrair o SQL do código, simplificando a comunicação entre o backend e o banco de dados. Além disso, migrações foram empregadas para controlar a versão do banco de dados, garantindo transições suaves e atualizações.
 
-## Description
+## Esquema do Banco de Dados
+Em breve...
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Endpoints da API
+A API oferece uma variedade de funcionalidades:
 
-## Installation
+### Autenticação:
+- `POST /auth/login`: Login
+- `POST /auth/logout`: Logout
+- `GET /auth/check`: Verificar status de autenticação
 
-```bash
-$ npm install
-```
+### Usuários:
+- `POST /users`: Criar usuário
+- `POST /users/check-email`: Verificar disponibilidade de email
+- `GET /users`: Recuperar todos os usuários
+- `GET /users/:id`: Recuperar usuário específico
+- `GET /users/:id/bookings`: Recuperar reservas de um usuário
+- `PUT /users/:id`: Atualizar usuário
+- `PATCH /users/:userId/favorite-hotels/:hotelId`: Favoritar um hotel
+- `DELETE /users`: Deletar usuário
 
-## Running the app
+### Regiões:
+- `GET /regions/search`: Pesquisar regiões predefinidas
 
-```bash
-# development
-$ npm run start
+### Hotéis:
+- `POST /hotels`: Criar hotel
+- `GET /hotels`: Recuperar todos os hotéis
+- `GET /hotels/detail`: Recuperar detalhes do hotel
+- `GET /hotels/:id`: Recuperar hotel específico
+- `GET /hotels/:id/unavailable-dates`: Recuperar datas indisponíveis para um hotel
+- `GET /hotels/:id/bookings`: Recuperar reservas para um hotel
+- `PUT /hotels/:id`: Atualizar hotel
 
-# watch mode
-$ npm run start:dev
+### Reservas:
+- `POST /bookings`: Criar reserva
+- `GET /bookings/:id`: Recuperar reserva específica
+- `PUT /bookings/:id`: Atualizar reserva
+- `PATCH /bookings/:id/finalize`: Finalizar reserva após confirmação de pagamento
 
-# production mode
-$ npm run start:prod
-```
+## Testes
+Em breve...
 
-## Test
+## Autenticação
+A autenticação na API é gerenciada usando JWTs passados via cookies. A funcionalidade subjacente é alimentada pela biblioteca passport, especificamente utilizando a estratégia JWT. Um sistema de funções e permissões não foi implementado nesta versão.
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+## Deploy
+O deploy do backend foi realizado usando um pipeline CI/CD configurada com GitHub Actions. A aplicação é hospedada na plataforma Render, garantindo um deploy suave e escalavel.
