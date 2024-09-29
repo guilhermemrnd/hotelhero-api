@@ -1,10 +1,11 @@
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { PostgresConfigService } from './config/postgres.config.service';
+import ormConfig from './config/typeorm.config';
 import { GlobalFilterException } from './common/global-filter-exception';
+
 import { AuthModule } from './features/auth/auth.module';
 import { UserModule } from './features/user/user.module';
 import { HotelModule } from './features/hotel/hotel.module';
@@ -15,8 +16,9 @@ import { RegionModule } from './features/region/region.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
-      useClass: PostgresConfigService,
-      inject: [PostgresConfigService],
+      imports: [ConfigModule],
+      useFactory: ormConfig,
+      inject: [ConfigService],
     }),
     UserModule,
     HotelModule,

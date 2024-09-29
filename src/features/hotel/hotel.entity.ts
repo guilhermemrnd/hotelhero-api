@@ -41,7 +41,7 @@ export class HotelEntity {
   @Column({ name: 'description', length: 2048, nullable: true })
   description: string;
 
-  @Column('text', { array: true, name: 'photos', nullable: true })
+  @Column({ name: 'photos', type: 'simple-array', nullable: true })
   photos: string[];
 
   @Column({ name: 'max_guests', nullable: true })
